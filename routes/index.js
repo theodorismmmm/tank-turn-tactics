@@ -4,6 +4,7 @@ const Game = require('../models/GameModel.js')
 const Player = require('../models/PlayerModel.js')
 const { getUserGames, getGame } = require("../controllers/GameController.js");
 const { displayName } = require("../controllers/AuthController.js");
+const { resolveLocale, SUPPORTED } = require('../libs/i18n');
 
 function userId(user) {
     return user && (user.id || (user._id && user._id.toString ? user._id.toString() : user._id));
@@ -12,6 +13,18 @@ function userId(user) {
 function asyncHandler(fn) {
     return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
+
+router.get('/lang/:locale', (req, res) => {
+    const locale = resolveLocale(req.params.locale);
+    if (!SUPPORTED.includes(locale)) {
+        return res.redirect('back');
+    }
+    res.setHeader('Set-Cookie', `lang=${locale}; Path=/; Max-Age=31536000; SameSite=Lax`);
+    const nextUrl = req.query.next ? String(req.query.next) : '/';
+    // Only allow relative redirects
+    const safeNext = nextUrl.startsWith('/') && !nextUrl.startsWith('//') ? nextUrl : '/';
+    return res.redirect(safeNext);
+});
 
 // Pages
 router.get('/', asyncHandler(async (req, res) => {

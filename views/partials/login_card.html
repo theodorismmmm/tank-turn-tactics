@@ -1,4 +1,4 @@
-<h2>Login</h2>
+<h2><%= t('auth.login') %></h2>
 <div id="login">
     <form action="/auth/login" method="post">
         <div>
@@ -7,28 +7,28 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const error = urlParams.get('error')
                 if (error === 'guest') {
-                    document.querySelector("p.error").innerHTML = "Could not start guest session. Try again."
+                    document.querySelector("p.error").innerHTML = window.t('auth.guestFailed')
                 } else if (error) {
-                    document.querySelector("p.error").innerHTML = "Invalid username or password!"
+                    document.querySelector("p.error").innerHTML = window.t('auth.invalidCredentials')
                 }
             </script>
 
-            <label for="username">Username: </label>
+            <label for="username"><%= t('auth.username') %> </label>
             <input type="text" id="username" name="username" autocomplete="username" minlength="3" maxlength="24" required/>
 
             <br/>
 
-            <label for="password">Password: </label>
+            <label for="password"><%= t('auth.password') %> </label>
             <input type="password" id="password" name="password" autocomplete="current-password" required/>
         </div>
-        <button type="submit">Login</button>
+        <button type="submit"><%= t('auth.login') %></button>
     </form>
 
     <form action="/auth/guest" method="post" style="margin-top: 12px;">
-        <button type="submit">Continue as Guest</button>
+        <button type="submit"><%= t('auth.continueGuest') %></button>
     </form>
 
-    <a href="/register">Register an account</a>
+    <a href="/register"><%= t('auth.registerAccount') %></a>
 </div>
 
 <style>
