@@ -30,10 +30,10 @@ function mockRes() {
 }
 
 describe('Debug panel', () => {
-    it('creates a debug user with debug+admin flags and no guest flag', async () => {
+    it('creates a debug user with debug flag but not admin', async () => {
         const user = await createDebugUser();
         expect(user.debug).toBe(true);
-        expect(user.admin).toBe(true);
+        expect(!!user.admin).toBe(false);
         expect(user.guest).toBe(false);
         expect(String(user.username)).toMatch(/^debug_/);
     });

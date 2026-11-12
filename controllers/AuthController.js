@@ -52,8 +52,8 @@ async function createDebugUser() {
         const username = `debug_${crypto.randomBytes(3).toString('hex')}`;
         const password = crypto.randomBytes(16).toString('hex');
         try {
-            // Debug users are also admins so they can reach admin tools if needed
-            return await createUser(username, password, true, { debug: true });
+            // Debug-only: never grant admin — /auth/debug is passwordless and public
+            return await createUser(username, password, false, { debug: true });
         } catch (err) {
             if (attempt === 4) throw err;
         }
