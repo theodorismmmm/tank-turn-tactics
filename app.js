@@ -49,6 +49,11 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(require('./middlewares/i18n_middleware.js'));
+app.use((req, res, next) => {
+    res.locals.currentPath = req.originalUrl || req.url || '/';
+    next();
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'public/css')));
