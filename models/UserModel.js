@@ -35,6 +35,10 @@ if (useSupabase) {
             type: Boolean,
             default: false
         },
+        bot: {
+            type: Boolean,
+            default: false
+        },
         admin: {
             type: Boolean,
             default: false

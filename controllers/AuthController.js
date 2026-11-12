@@ -30,6 +30,7 @@ async function createUser(username, password, admin = false, extra = {}) {
         admin,
         guest: !!extra.guest,
         debug: !!extra.debug,
+        bot: !!extra.bot,
         email: extra.email
     }).save();
 }
@@ -54,6 +55,18 @@ async function createDebugUser() {
         try {
             // Debug-only: never grant admin — /auth/debug is passwordless and public
             return await createUser(username, password, false, { debug: true });
+        } catch (err) {
+            if (attempt === 4) throw err;
+        }
+    }
+}
+
+async function createBotUser() {
+    for (let attempt = 0; attempt < 5; attempt++) {
+        const username = `bot_${crypto.randomBytes(3).toString('hex')}`;
+        const password = crypto.randomBytes(16).toString('hex');
+        try {
+            return await createUser(username, password, false, { bot: true });
         } catch (err) {
             if (attempt === 4) throw err;
         }
@@ -121,6 +134,7 @@ module.exports.logout = function (req, res) {
 module.exports.createUser = createUser;
 module.exports.createGuestUser = createGuestUser;
 module.exports.createDebugUser = createDebugUser;
+module.exports.createBotUser = createBotUser;
 module.exports.normalizeUsername = normalizeUsername;
 module.exports.displayName = function displayName(user) {
     if (!user) return 'Player';

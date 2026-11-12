@@ -356,12 +356,23 @@ async function queueAction(req, res, action, data) {
     }
 }
 
+async function maybeRunBots(game) {
+    if (!game || !game.vsBots) return;
+    try {
+        const { runBotsForGame } = require('./BotController.js');
+        await runBotsForGame(game._id);
+    } catch (err) {
+        console.error('[action] bot reply failed', err);
+    }
+}
+
 async function moveReq(req, res) {
     if (!req.game.doActionQueue) {
         const result = await move(req.game, req.player, req.body);
 
         if (result.status === 200) {
             await logAction(req.game, req.player._id, 'move', req.body, 'actionLog')
+            await maybeRunBots(req.game);
         }
 
         if (result.status !== 200) console.log(result.message)
@@ -384,6 +395,7 @@ async function attackReq(req, res) {
                 bountyClaimed: result.bountyClaimed,
                 count: req.params.count
             }, 'actionLog')
+            await maybeRunBots(req.game);
         }
 
         res.status(result.status).send(result.message)
@@ -400,6 +412,7 @@ async function upgradeReq(req, res) {
 
         if (result.status === 200) {
             await logAction(req.game, req.player._id, 'upgrade', data, 'actionLog')
+            await maybeRunBots(req.game);
         }
 
         res.status(result.status).send(result.message)
@@ -416,6 +429,7 @@ async function giveReq(req, res) {
 
         if (result.status === 200) {
             await logAction(req.game, req.player._id, 'give', data, 'actionLog')
+            await maybeRunBots(req.game);
         }
 
         res.status(result.status).send(result.message)

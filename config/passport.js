@@ -44,6 +44,11 @@ function verifyCallback(username, password, done) {
             return done(null, false, { message: 'Debug account.' });
         }
 
+        if (user.bot) {
+            console.log("Bot accounts cannot password-login")
+            return done(null, false, { message: 'Bot account.' });
+        }
+
         validPassword(password, user.hash, user.salt)
             .then(isValid => {
                 if (!isValid) {

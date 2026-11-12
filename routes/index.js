@@ -3,6 +3,7 @@ const { isLoggedIn, isAdmin } = require('../middlewares/auth_middleware.js')
 const Game = require('../models/GameModel.js')
 const Player = require('../models/PlayerModel.js')
 const { getUserGames, getGame } = require("../controllers/GameController.js");
+const { startBotsMatch } = require('../controllers/BotController.js');
 const { displayName } = require("../controllers/AuthController.js");
 const { resolveLocale, SUPPORTED } = require('../libs/i18n');
 
@@ -51,6 +52,15 @@ router.get('/login', (req, res) => {
 router.get('/create-game', isLoggedIn, (req, res) => {
     res.render('pages/game/create', { name: displayName(req.user) } )
 })
+
+router.get('/bots', isLoggedIn, (req, res) => {
+    res.render('pages/bots', {
+        name: displayName(req.user),
+        error: req.query.error === 'true'
+    })
+})
+
+router.post('/bots/start', isLoggedIn, startBotsMatch)
 
 router.get('/join/:gameId?', isLoggedIn, (req, res, next) => {
     const { gameId } = req.params;

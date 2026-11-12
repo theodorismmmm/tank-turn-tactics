@@ -52,6 +52,16 @@ async function performActions(game) {
     await distributeActions(game, players)
 
     await game.save();
+
+    // Vs-bots matches: after the clock tick / AP grant, bots spend like humans
+    if (game.vsBots) {
+        try {
+            const { runBotsForGame } = require('../controllers/BotController.js');
+            await runBotsForGame(game._id);
+        } catch (err) {
+            console.error(`[app] Bot think failed for ${game && game._id}:`, err);
+        }
+    }
 }
 
 async function distributeActions(game, players) {
