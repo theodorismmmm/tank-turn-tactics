@@ -29,6 +29,7 @@ async function createUser(username, password, admin = false, extra = {}) {
         salt: saltHash.salt,
         admin,
         guest: !!extra.guest,
+        debug: !!extra.debug,
         email: extra.email
     }).save();
 }
@@ -41,6 +42,19 @@ async function createGuestUser() {
             return await createUser(username, password, false, { guest: true });
         } catch (err) {
             // retry on rare username collision
+            if (attempt === 4) throw err;
+        }
+    }
+}
+
+async function createDebugUser() {
+    for (let attempt = 0; attempt < 5; attempt++) {
+        const username = `debug_${crypto.randomBytes(3).toString('hex')}`;
+        const password = crypto.randomBytes(16).toString('hex');
+        try {
+            // Debug users are also admins so they can reach admin tools if needed
+            return await createUser(username, password, true, { debug: true });
+        } catch (err) {
             if (attempt === 4) throw err;
         }
     }
@@ -86,6 +100,19 @@ module.exports.guestLogin = async function (req, res, next) {
     }
 }
 
+module.exports.debugLogin = async function (req, res, next) {
+    try {
+        const user = await createDebugUser();
+        req.login(user, (err) => {
+            if (err) return next(err);
+            return res.redirect('/debug');
+        });
+    } catch (err) {
+        console.log(err);
+        res.redirect('/login?error=debug&tab=debug');
+    }
+}
+
 module.exports.logout = function (req, res) {
     req.logout();
     res.redirect('/login');
@@ -93,6 +120,7 @@ module.exports.logout = function (req, res) {
 
 module.exports.createUser = createUser;
 module.exports.createGuestUser = createGuestUser;
+module.exports.createDebugUser = createDebugUser;
 module.exports.normalizeUsername = normalizeUsername;
 module.exports.displayName = function displayName(user) {
     if (!user) return 'Player';

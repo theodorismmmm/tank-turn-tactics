@@ -6,6 +6,9 @@
     <a class="navItem" href="/"><%= t('nav.home') %></a>
     <a class="navItem" href="/join"><%= t('nav.join') %></a>
     <a class="navItem" href="/create-game"><%= t('nav.create') %></a>
+    <% if (typeof currentUser !== 'undefined' && currentUser && (currentUser.debug || currentUser.admin)) { %>
+    <a class="navItem" href="/debug"><%= t('nav.debug') %></a>
+    <% } %>
     <div style="margin: 10px 20px;">
         <%- include('./lang_switcher.ejs') %>
     </div>

@@ -39,6 +39,11 @@ function verifyCallback(username, password, done) {
             return done(null, false, { message: 'Guest account.' });
         }
 
+        if (user.debug) {
+            console.log("Debug accounts cannot password-login")
+            return done(null, false, { message: 'Debug account.' });
+        }
+
         validPassword(password, user.hash, user.salt)
             .then(isValid => {
                 if (!isValid) {
