@@ -1,9 +1,15 @@
 <%- include('../partials/head.html') %>
 
+<%- include('../partials/debug_splash.html') %>
+
 <div class="section debug-page">
     <%- include('../partials/header.html') %>
 
-    <div class="area debug-area">
+    <div class="area debug-area" id="debug-surface" data-debug-surface>
+        <div class="debug-window-chrome" aria-hidden="true">
+            <span class="debug-window-chrome__traffic"><i></i><i></i><i></i></span>
+            <span class="debug-window-chrome__title"><%= t('nav.debug') %></span>
+        </div>
         <header class="debug-header">
             <div>
                 <h1><%= t('debug.title') %></h1>
@@ -141,8 +147,59 @@
         flex: 1;
         max-width: 980px;
         width: 100%;
-        padding: 20px 24px 48px;
+        margin: 18px 18px 24px 0;
+        padding: 0 24px 48px;
         overflow: auto;
+        background: rgba(12, 12, 14, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+        opacity: 1;
+        transform: none;
+    }
+
+    .debug-area.is-awaiting-morph {
+        opacity: 0;
+    }
+
+    .debug-area.is-revealed {
+        opacity: 1;
+        transition: opacity 0.35s ease 0.05s;
+    }
+
+    .debug-window-chrome {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        margin: 0 -24px 16px;
+        padding: 0 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px 12px 0 0;
+    }
+
+    .debug-window-chrome__traffic {
+        display: inline-flex;
+        gap: 6px;
+    }
+
+    .debug-window-chrome__traffic i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        display: block;
+    }
+
+    .debug-window-chrome__title {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: rgba(255, 255, 255, 0.62);
+    }
+
+    .debug-header {
+        padding-top: 8px;
     }
 
     .debug-header {
@@ -285,6 +342,15 @@
 
 <script>
     (function () {
+        var surface = document.getElementById('debug-surface');
+        if (window.DebugSplash && surface && window.DebugSplash.consumePendingMorph()) {
+            surface.classList.add('is-awaiting-morph');
+            window.DebugSplash.morphInto(surface, { holdMs: 650 }).then(function () {
+                surface.classList.remove('is-awaiting-morph');
+                surface.classList.add('is-revealed');
+            });
+        }
+
         async function postJson(url, body) {
             const res = await fetch(url, {
                 method: 'POST',

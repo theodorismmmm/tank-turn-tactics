@@ -1,8 +1,17 @@
 <div id="debug-splash" class="debug-splash" hidden aria-hidden="true">
-    <div class="debug-splash__inner">
-        <img class="debug-splash__logo" src="/assets/sentry-logo.svg" alt="Sentry" width="48" height="48" />
-        <div class="debug-splash__track" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100">
-            <div class="debug-splash__bar"></div>
+    <div class="debug-splash__scrim" data-splash-scrim></div>
+    <div class="debug-splash__window" data-splash-window>
+        <div class="debug-splash__titlebar">
+            <span class="debug-splash__traffic" aria-hidden="true">
+                <i></i><i></i><i></i>
+            </span>
+            <span class="debug-splash__title">Sentry</span>
+        </div>
+        <div class="debug-splash__body">
+            <img class="debug-splash__logo" src="/assets/sentry-logo.svg" alt="Sentry" width="40" height="40" />
+            <div class="debug-splash__track" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100">
+                <div class="debug-splash__bar"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -19,32 +28,111 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #0b0b0c;
-        transition: opacity 0.4s ease;
-    }
-
-    .debug-splash.is-hiding {
-        opacity: 0;
         pointer-events: none;
     }
 
-    .debug-splash__inner {
+    .debug-splash.is-active {
+        pointer-events: auto;
+    }
+
+    .debug-splash__scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.28);
+        opacity: 0;
+        transition: opacity 0.28s ease;
+    }
+
+    .debug-splash.is-active .debug-splash__scrim {
+        opacity: 1;
+    }
+
+    .debug-splash__window {
+        position: relative;
+        width: min(360px, calc(100vw - 48px));
+        border-radius: 12px;
+        background: #161618;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow:
+            0 18px 48px rgba(0, 0, 0, 0.45),
+            0 2px 8px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        transform-origin: center center;
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+        transition:
+            opacity 0.28s ease,
+            transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+            width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+            height 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+            border-radius 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+            top 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+            left 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: transform, width, height, top, left, border-radius, opacity;
+    }
+
+    .debug-splash.is-active .debug-splash__window {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    .debug-splash.is-morphing .debug-splash__scrim {
+        opacity: 0;
+        transition-duration: 0.45s;
+    }
+
+    .debug-splash.is-morphing .debug-splash__body,
+    .debug-splash.is-morphing .debug-splash__titlebar {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .debug-splash__titlebar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .debug-splash__traffic {
+        display: inline-flex;
+        gap: 6px;
+    }
+
+    .debug-splash__traffic i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        display: block;
+    }
+
+    .debug-splash__title {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: rgba(255, 255, 255, 0.62);
+    }
+
+    .debug-splash__body {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 32px;
-        width: min(220px, 56vw);
+        gap: 22px;
+        padding: 36px 28px 40px;
     }
 
     .debug-splash__logo {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
         opacity: 0;
-        animation: debugSplashLogoIn 0.55s ease forwards;
+        animation: debugSplashLogoIn 0.5s ease 0.08s forwards;
     }
 
     .debug-splash__track {
-        width: 100%;
+        width: 160px;
         height: 2px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.1);
@@ -56,7 +144,7 @@
         height: 100%;
         border-radius: 999px;
         background: #ffffff;
-        animation: debugSplashSlide 1.2s ease-in-out infinite;
+        animation: debugSplashSlide 1.15s ease-in-out infinite;
     }
 
     @keyframes debugSplashLogoIn {
@@ -82,38 +170,74 @@
 
 <script>
     window.DebugSplash = (function () {
-        function el() {
+        var STORAGE_KEY = 'ttt_debug_morph';
+
+        function root() {
             return document.getElementById('debug-splash');
         }
 
+        function win() {
+            var node = root();
+            return node ? node.querySelector('[data-splash-window]') : null;
+        }
+
         function show() {
-            const node = el();
+            var node = root();
             if (!node) return;
             node.hidden = false;
             node.setAttribute('aria-hidden', 'false');
-            node.classList.remove('is-hiding');
+            // Force reflow so enter transition plays
+            void node.offsetWidth;
+            node.classList.add('is-active');
+            node.classList.remove('is-morphing', 'is-hiding');
         }
 
-        function hide(delayMs) {
-            const node = el();
+        function hide() {
+            var node = root();
             if (!node) return Promise.resolve();
-            const wait = typeof delayMs === 'number' ? delayMs : 0;
+            node.classList.remove('is-active', 'is-morphing');
+            node.classList.add('is-hiding');
             return new Promise(function (resolve) {
                 setTimeout(function () {
-                    node.classList.add('is-hiding');
-                    setTimeout(function () {
-                        node.hidden = true;
-                        node.setAttribute('aria-hidden', 'true');
-                        node.classList.remove('is-hiding');
-                        resolve();
-                    }, 400);
-                }, wait);
+                    node.hidden = true;
+                    node.setAttribute('aria-hidden', 'true');
+                    node.classList.remove('is-hiding');
+                    var w = win();
+                    if (w) {
+                        w.style.position = '';
+                        w.style.top = '';
+                        w.style.left = '';
+                        w.style.width = '';
+                        w.style.height = '';
+                        w.style.borderRadius = '';
+                        w.style.transform = '';
+                    }
+                    resolve();
+                }, 320);
             });
         }
 
+        function markPendingMorph() {
+            try {
+                sessionStorage.setItem(STORAGE_KEY, '1');
+            } catch (_) {}
+        }
+
+        function consumePendingMorph() {
+            try {
+                if (sessionStorage.getItem(STORAGE_KEY) === '1') {
+                    sessionStorage.removeItem(STORAGE_KEY);
+                    return true;
+                }
+            } catch (_) {}
+            return false;
+        }
+
+        /** Show windowed splash, then submit the debug login form. */
         function enter(form, minMs) {
+            markPendingMorph();
             show();
-            const wait = typeof minMs === 'number' ? minMs : 1000;
+            var wait = typeof minMs === 'number' ? minMs : 1100;
             setTimeout(function () {
                 if (form) {
                     HTMLFormElement.prototype.submit.call(form);
@@ -121,6 +245,68 @@
             }, wait);
         }
 
-        return { show: show, hide: hide, enter: enter };
+        /**
+         * Microsoft-style connected morph: expand the splash window into a
+         * destination element (e.g. the Debug console panel / tab surface).
+         */
+        function morphInto(target, opts) {
+            var node = root();
+            var windowEl = win();
+            if (!node || !windowEl || !target) {
+                return hide();
+            }
+
+            opts = opts || {};
+            var holdMs = typeof opts.holdMs === 'number' ? opts.holdMs : 700;
+
+            show();
+
+            return new Promise(function (resolve) {
+                setTimeout(function () {
+                    var from = windowEl.getBoundingClientRect();
+                    var to = target.getBoundingClientRect();
+
+                    // Lift window into fixed coordinates for FLIP morph
+                    windowEl.style.position = 'fixed';
+                    windowEl.style.top = from.top + 'px';
+                    windowEl.style.left = from.left + 'px';
+                    windowEl.style.width = from.width + 'px';
+                    windowEl.style.height = from.height + 'px';
+                    windowEl.style.margin = '0';
+                    windowEl.style.transform = 'none';
+
+                    node.classList.add('is-morphing');
+
+                    // Next frame → animate to destination geometry
+                    requestAnimationFrame(function () {
+                        requestAnimationFrame(function () {
+                            windowEl.style.top = to.top + 'px';
+                            windowEl.style.left = to.left + 'px';
+                            windowEl.style.width = Math.max(to.width, 1) + 'px';
+                            windowEl.style.height = Math.max(to.height, 1) + 'px';
+                            windowEl.style.borderRadius = '10px';
+                            windowEl.style.opacity = '0';
+                        });
+                    });
+
+                    // Reveal destination as soon as the morph finishes —
+                    // don't wait for splash cleanup (hide) or the console
+                    // stays blank after the window has already faded out.
+                    setTimeout(function () {
+                        resolve();
+                        hide();
+                    }, 560);
+                }, holdMs);
+            });
+        }
+
+        return {
+            show: show,
+            hide: hide,
+            enter: enter,
+            morphInto: morphInto,
+            consumePendingMorph: consumePendingMorph,
+            markPendingMorph: markPendingMorph
+        };
     })();
 </script>
