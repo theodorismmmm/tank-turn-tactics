@@ -1,7 +1,5 @@
 <%- include('../partials/head.html') %>
 
-<%- include('../partials/debug_splash.html') %>
-
 <div class="section debug-page">
     <%- include('../partials/header.html') %>
 
@@ -199,8 +197,8 @@
     }
 
     .debug-pill.is-live {
-        border-color: #6c5fc7;
-        color: #cfc7ff;
+        border-color: rgba(255, 255, 255, 0.45);
+        color: #fff;
     }
 
     .debug-link {
@@ -287,10 +285,6 @@
 
 <script>
     (function () {
-        if (window.DebugSplash) {
-            window.DebugSplash.run(850);
-        }
-
         async function postJson(url, body) {
             const res = await fetch(url, {
                 method: 'POST',

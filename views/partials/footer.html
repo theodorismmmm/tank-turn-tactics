@@ -4,6 +4,12 @@
         <a href="/changelog"><%= t('nav.changelog') %></a>
         <a href="/how-to-play"><%= t('nav.howToPlay') %></a>
         <a href="/credits"><%= t('nav.credits') %></a>
+        <% var _debugUser = (typeof currentUser !== 'undefined') ? currentUser : null; %>
+        <% if (_debugUser && (_debugUser.debug || _debugUser.admin)) { %>
+        <a href="/debug"><%= t('nav.debug') %></a>
+        <% } else if (!_debugUser) { %>
+        <a href="/login?tab=debug"><%= t('nav.debug') %></a>
+        <% } %>
         <%- include('./lang_switcher.ejs') %>
     </div>
     <div id="info">
