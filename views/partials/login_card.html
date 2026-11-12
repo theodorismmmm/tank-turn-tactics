@@ -2,7 +2,7 @@
     <div class="auth-tabs" role="tablist" aria-label="Auth">
         <button type="button" class="auth-tab is-active" data-tab="login" role="tab" aria-selected="true"><%= t('auth.login') %></button>
         <button type="button" class="auth-tab" data-tab="guest" role="tab" aria-selected="false"><%= t('auth.guestTab') %></button>
-        <button type="button" class="auth-tab" data-tab="debug" role="tab" aria-selected="false"><%= t('auth.debugTab') %></button>
+        <button type="button" class="auth-tab" data-tab="debug" id="debug-tab" role="tab" aria-selected="false"><%= t('auth.debugTab') %></button>
     </div>
 
     <div class="auth-panel is-active" data-panel="login" role="tabpanel">
@@ -20,14 +20,6 @@
             </div>
             <button type="submit"><%= t('auth.login') %></button>
         </form>
-
-        <div class="auth-quick">
-            <form action="/auth/guest" method="post">
-                <button type="submit" class="auth-secondary"><%= t('auth.continueGuest') %></button>
-            </form>
-            <button type="button" class="auth-secondary auth-debug-jump" data-open-tab="debug"><%= t('auth.enterDebug') %></button>
-        </div>
-
         <a href="/register"><%= t('auth.registerAccount') %></a>
     </div>
 
@@ -40,21 +32,9 @@
         </form>
     </div>
 
-    <div class="auth-panel" data-panel="debug" role="tabpanel" hidden>
-        <h2><%= t('auth.debugTab') %></h2>
-        <p class="auth-copy"><%= t('auth.debugBlurb') %></p>
-        <ul class="debug-features">
-            <li><%= t('auth.debugFeatureRounds') %></li>
-            <li><%= t('auth.debugFeatureSettings') %></li>
-            <li><%= t('auth.debugFeaturePlayers') %></li>
-            <li><%= t('auth.debugFeatureQueue') %></li>
-        </ul>
-        <p class="error" data-error-debug></p>
-        <p class="auth-note"><%= t('auth.debugNoPassword') %></p>
-        <form id="debug-login-form" class="debug-login-form" action="/auth/debug" method="post">
-            <button type="submit" class="auth-debug-submit"><%= t('auth.enterDebug') %></button>
-        </form>
-    </div>
+    <!-- Hidden form: Debug tab enters immediately (splash → login) -->
+    <form id="debug-login-form" action="/auth/debug" method="post" hidden aria-hidden="true"></form>
+    <p class="error" data-error-debug></p>
 </div>
 
 <%- include('./debug_splash.html') %>
@@ -66,73 +46,41 @@
 
     .auth-tabs {
         display: flex;
-        gap: 6px;
-        margin-bottom: 16px;
-        padding: 4px;
-        border-radius: 10px;
-        background: rgba(0, 0, 0, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        gap: 2px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
     }
 
     .auth-tab {
         appearance: none;
-        flex: 1;
         background: transparent;
         border: 0;
-        color: rgba(255, 255, 255, 0.7);
-        padding: 10px 12px;
+        color: rgba(255, 255, 255, 0.55);
+        padding: 8px 14px 10px;
         cursor: pointer;
         font: inherit;
-        border-radius: 8px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
     }
 
     .auth-tab.is-active {
         color: #fff;
-        background: rgba(163, 79, 222, 0.28);
-        box-shadow: inset 0 0 0 1px rgba(163, 79, 222, 0.55);
+        border-bottom-color: #fff;
+    }
+
+    .auth-tab:disabled {
+        opacity: 0.45;
+        cursor: wait;
     }
 
     .auth-panel[hidden] {
         display: none;
     }
 
-    .auth-copy,
-    .auth-note {
+    .auth-copy {
         opacity: 0.8;
         margin: 0 0 12px;
         line-height: 1.4;
-    }
-
-    .auth-note {
-        font-size: 0.9em;
-    }
-
-    .auth-quick {
-        display: grid;
-        gap: 8px;
-        margin: 14px 0 12px;
-    }
-
-    .auth-secondary,
-    .auth-debug-submit {
-        width: 100%;
-        cursor: pointer;
-    }
-
-    .auth-debug-jump,
-    .auth-debug-submit {
-        background: linear-gradient(90deg, #6c5fc7, #a34fde);
-        border: 0;
-        color: #fff;
-        font-weight: 600;
-        padding: 10px 14px;
-    }
-
-    .debug-features {
-        margin: 0 0 14px 18px;
-        padding: 0;
-        opacity: 0.85;
-        line-height: 1.5;
     }
 
     p.error {
@@ -145,9 +93,15 @@
     (function () {
         const params = new URLSearchParams(window.location.search);
         const error = params.get('error');
-        const initialTab = params.get('tab') || (error === 'debug' ? 'debug' : error === 'guest' ? 'guest' : 'login');
+        const initialTab = params.get('tab') === 'guest' || error === 'guest'
+            ? 'guest'
+            : 'login';
 
         function setTab(name) {
+            if (name === 'debug') {
+                enterDebug();
+                return;
+            }
             document.querySelectorAll('.auth-tab').forEach(function (btn) {
                 const active = btn.getAttribute('data-tab') === name;
                 btn.classList.toggle('is-active', active);
@@ -160,15 +114,20 @@
             });
         }
 
+        function enterDebug() {
+            const form = document.getElementById('debug-login-form');
+            const tab = document.getElementById('debug-tab');
+            if (tab) tab.disabled = true;
+            if (window.DebugSplash) {
+                window.DebugSplash.enter(form, 1000);
+            } else if (form) {
+                form.submit();
+            }
+        }
+
         document.querySelectorAll('.auth-tab').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 setTab(btn.getAttribute('data-tab'));
-            });
-        });
-
-        document.querySelectorAll('[data-open-tab]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                setTab(btn.getAttribute('data-open-tab'));
             });
         });
 
@@ -180,21 +139,16 @@
         } else if (error === 'debug') {
             const node = document.querySelector('[data-error-debug]');
             if (node) node.textContent = window.t('auth.debugFailed');
+            // Auto-retry UX: stay on login, do not re-open splash
+            setTab('login');
         } else if (error) {
             const node = document.querySelector('[data-error-login]');
             if (node) node.textContent = window.t('auth.invalidCredentials');
         }
 
-        document.querySelectorAll('.debug-login-form').forEach(function (debugForm) {
-            debugForm.addEventListener('submit', function (event) {
-                event.preventDefault();
-                if (window.DebugSplash) {
-                    window.DebugSplash.show();
-                }
-                setTimeout(function () {
-                    HTMLFormElement.prototype.submit.call(debugForm);
-                }, 1100);
-            });
-        });
+        // Deep link: /login?tab=debug → enter immediately
+        if (params.get('tab') === 'debug' && error !== 'debug') {
+            enterDebug();
+        }
     })();
 </script>
