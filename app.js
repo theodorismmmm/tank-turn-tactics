@@ -96,6 +96,10 @@ async function boot() {
     require('./config/passport.js');
     app.use(passport.initialize());
     app.use(passport.session());
+    app.use((req, res, next) => {
+        res.locals.currentUser = req.user || null;
+        next();
+    });
 
     app.get('/api/health', async (req, res) => {
         const supabase = await pingSupabase();

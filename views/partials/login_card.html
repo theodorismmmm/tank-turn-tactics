@@ -1,42 +1,163 @@
-<h2><%= t('auth.login') %></h2>
 <div id="login">
-    <form action="/auth/login" method="post">
-        <div>
-            <p class="error"></p>
-            <script>
-                const urlParams = new URLSearchParams(window.location.search);
-                const error = urlParams.get('error')
-                if (error === 'guest') {
-                    document.querySelector("p.error").innerHTML = window.t('auth.guestFailed')
-                } else if (error) {
-                    document.querySelector("p.error").innerHTML = window.t('auth.invalidCredentials')
-                }
-            </script>
+    <div class="auth-tabs" role="tablist" aria-label="Auth">
+        <button type="button" class="auth-tab is-active" data-tab="login" role="tab" aria-selected="true"><%= t('auth.login') %></button>
+        <button type="button" class="auth-tab" data-tab="guest" role="tab" aria-selected="false"><%= t('auth.guestTab') %></button>
+        <button type="button" class="auth-tab" data-tab="debug" role="tab" aria-selected="false"><%= t('auth.debugTab') %></button>
+    </div>
 
-            <label for="username"><%= t('auth.username') %> </label>
-            <input type="text" id="username" name="username" autocomplete="username" minlength="3" maxlength="24" required/>
+    <div class="auth-panel is-active" data-panel="login" role="tabpanel">
+        <h2><%= t('auth.login') %></h2>
+        <form action="/auth/login" method="post">
+            <div>
+                <p class="error" data-error-login></p>
+                <label for="username"><%= t('auth.username') %> </label>
+                <input type="text" id="username" name="username" autocomplete="username" minlength="3" maxlength="24" required/>
 
-            <br/>
+                <br/>
 
-            <label for="password"><%= t('auth.password') %> </label>
-            <input type="password" id="password" name="password" autocomplete="current-password" required/>
-        </div>
-        <button type="submit"><%= t('auth.login') %></button>
-    </form>
+                <label for="password"><%= t('auth.password') %> </label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required/>
+            </div>
+            <button type="submit"><%= t('auth.login') %></button>
+        </form>
+        <a href="/register"><%= t('auth.registerAccount') %></a>
+    </div>
 
-    <form action="/auth/guest" method="post" style="margin-top: 12px;">
-        <button type="submit"><%= t('auth.continueGuest') %></button>
-    </form>
+    <div class="auth-panel" data-panel="guest" role="tabpanel" hidden>
+        <h2><%= t('auth.guestTab') %></h2>
+        <p class="auth-copy"><%= t('auth.guestBlurb') %></p>
+        <p class="error" data-error-guest></p>
+        <form action="/auth/guest" method="post">
+            <button type="submit"><%= t('auth.continueGuest') %></button>
+        </form>
+    </div>
 
-    <a href="/register"><%= t('auth.registerAccount') %></a>
+    <div class="auth-panel" data-panel="debug" role="tabpanel" hidden>
+        <h2><%= t('auth.debugTab') %></h2>
+        <p class="auth-copy"><%= t('auth.debugBlurb') %></p>
+        <ul class="debug-features">
+            <li><%= t('auth.debugFeatureRounds') %></li>
+            <li><%= t('auth.debugFeatureSettings') %></li>
+            <li><%= t('auth.debugFeaturePlayers') %></li>
+            <li><%= t('auth.debugFeatureQueue') %></li>
+        </ul>
+        <p class="error" data-error-debug></p>
+        <p class="auth-note"><%= t('auth.debugNoPassword') %></p>
+        <form id="debug-login-form" action="/auth/debug" method="post">
+            <button type="submit"><%= t('auth.enterDebug') %></button>
+        </form>
+    </div>
 </div>
+
+<%- include('./debug_splash.html') %>
 
 <style>
     h2 {
-        margin: 2px;
+        margin: 2px 0 12px;
     }
 
-    #login {
+    .auth-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
 
+    .auth-tab {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        color: rgba(255, 255, 255, 0.55);
+        padding: 8px 12px;
+        cursor: pointer;
+        font: inherit;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+    }
+
+    .auth-tab.is-active {
+        color: #fff;
+        border-bottom-color: #a34fde;
+    }
+
+    .auth-panel[hidden] {
+        display: none;
+    }
+
+    .auth-copy,
+    .auth-note {
+        opacity: 0.8;
+        margin: 0 0 12px;
+        line-height: 1.4;
+    }
+
+    .auth-note {
+        font-size: 0.9em;
+    }
+
+    .debug-features {
+        margin: 0 0 14px 18px;
+        padding: 0;
+        opacity: 0.85;
+        line-height: 1.5;
+    }
+
+    p.error {
+        color: #ff7b7b;
+        min-height: 1.2em;
     }
 </style>
+
+<script>
+    (function () {
+        const params = new URLSearchParams(window.location.search);
+        const error = params.get('error');
+        const initialTab = params.get('tab') || (error === 'debug' ? 'debug' : error === 'guest' ? 'guest' : 'login');
+
+        function setTab(name) {
+            document.querySelectorAll('.auth-tab').forEach(function (btn) {
+                const active = btn.getAttribute('data-tab') === name;
+                btn.classList.toggle('is-active', active);
+                btn.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+            document.querySelectorAll('.auth-panel').forEach(function (panel) {
+                const active = panel.getAttribute('data-panel') === name;
+                panel.classList.toggle('is-active', active);
+                panel.hidden = !active;
+            });
+        }
+
+        document.querySelectorAll('.auth-tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                setTab(btn.getAttribute('data-tab'));
+            });
+        });
+
+        setTab(initialTab);
+
+        if (error === 'guest') {
+            const node = document.querySelector('[data-error-guest]');
+            if (node) node.textContent = window.t('auth.guestFailed');
+        } else if (error === 'debug') {
+            const node = document.querySelector('[data-error-debug]');
+            if (node) node.textContent = window.t('auth.debugFailed');
+        } else if (error) {
+            const node = document.querySelector('[data-error-login]');
+            if (node) node.textContent = window.t('auth.invalidCredentials');
+        }
+
+        const debugForm = document.getElementById('debug-login-form');
+        if (debugForm) {
+            debugForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                if (window.DebugSplash) {
+                    window.DebugSplash.show();
+                }
+                // Brief professional splash, then continue into debug login
+                setTimeout(function () {
+                    debugForm.submit();
+                }, 1100);
+            });
+        }
+    })();
+</script>

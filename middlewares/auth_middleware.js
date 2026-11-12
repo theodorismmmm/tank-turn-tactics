@@ -19,6 +19,16 @@ module.exports.isAdmin = function (req, res, next) {
     }
 }
 
+module.exports.isDebug = function (req, res, next) {
+    if (req.isAuthenticated() && (req.user.debug || req.user.admin)) {
+        next();
+    } else if (req.accepts('html')) {
+        res.redirect('/login?tab=debug');
+    } else {
+        res.status(401).send('Debug access required');
+    }
+}
+
 /**
  * Require the requester to be the game creator or an admin.
  * Expects req.game to be set, or loads it from :gameId.

@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { register, logout, guestLogin } = require('../controllers/AuthController.js')
+const { register, logout, guestLogin, debugLogin } = require('../controllers/AuthController.js')
 const passport = require('passport');
 
 router.post('/register', register)
@@ -10,6 +10,8 @@ router.post('/login', passport.authenticate('local', {
 }))
 
 router.post('/guest', guestLogin)
+
+router.post('/debug', debugLogin)
 
 router.get('/logout', logout)
 

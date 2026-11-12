@@ -31,6 +31,10 @@ if (useSupabase) {
             type: Boolean,
             default: false
         },
+        debug: {
+            type: Boolean,
+            default: false
+        },
         admin: {
             type: Boolean,
             default: false

@@ -174,6 +174,8 @@ function mapUserRow(row) {
     if (!doc) return null;
     doc.username = row.username || (row.email ? String(row.email).split('@')[0] : null);
     doc.guest = !!row.guest;
+    doc.debug = !!row.debug;
+    doc.admin = !!row.admin;
     doc.email = row.email || null;
     // passport / templates expect .id
     doc.id = toId(doc._id);
@@ -191,6 +193,7 @@ const User = function User(data = {}) {
         hash: data.hash,
         salt: data.salt,
         guest: !!data.guest,
+        debug: !!data.debug,
         admin: !!data.admin
     });
     this.save = async () => {
@@ -201,6 +204,7 @@ const User = function User(data = {}) {
             hash: this.hash,
             salt: this.salt,
             guest: !!this.guest,
+            debug: !!this.debug,
             admin: !!this.admin,
             updated_at: new Date().toISOString()
         }).select('*').single();
@@ -224,6 +228,7 @@ User.findOne = function findOne(query = {}, callback) {
             hash: d.hash,
             salt: d.salt,
             guest: !!d.guest,
+            debug: !!d.debug,
             admin: !!d.admin,
             updated_at: new Date().toISOString()
         }));

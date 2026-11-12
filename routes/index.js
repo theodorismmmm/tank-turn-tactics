@@ -107,4 +107,5 @@ module.exports = (app) => {
     app.use('/user', require('./user_router.js'))
     app.use('/game', require('./game_router.js'))
     app.use('/action', require('./action_router.js'))
+    app.use('/debug', require('./debug_router.js'))
 }

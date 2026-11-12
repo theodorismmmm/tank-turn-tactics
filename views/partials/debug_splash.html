@@ -1,0 +1,118 @@
+<div id="debug-splash" class="debug-splash" hidden aria-hidden="true">
+    <div class="debug-splash__inner">
+        <img class="debug-splash__logo" src="/assets/sentry-logo.svg" alt="Sentry" width="72" height="66" />
+        <div class="debug-splash__track" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100">
+            <div class="debug-splash__bar"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .debug-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1f1635;
+        transition: opacity 0.45s ease;
+    }
+
+    .debug-splash.is-hiding {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .debug-splash__inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+        width: min(280px, 70vw);
+    }
+
+    .debug-splash__logo {
+        width: 72px;
+        height: 66px;
+        opacity: 0;
+        animation: debugSplashLogoIn 0.6s ease forwards;
+    }
+
+    .debug-splash__track {
+        width: 100%;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+    }
+
+    .debug-splash__bar {
+        width: 40%;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #6c5fc7, #a34fde);
+        animation: debugSplashSlide 1.15s ease-in-out infinite;
+    }
+
+    @keyframes debugSplashLogoIn {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes debugSplashSlide {
+        0% {
+            transform: translateX(-120%);
+        }
+        100% {
+            transform: translateX(320%);
+        }
+    }
+</style>
+
+<script>
+    window.DebugSplash = (function () {
+        function el() {
+            return document.getElementById('debug-splash');
+        }
+
+        function show() {
+            const node = el();
+            if (!node) return;
+            node.hidden = false;
+            node.setAttribute('aria-hidden', 'false');
+            node.classList.remove('is-hiding');
+        }
+
+        function hide(delayMs) {
+            const node = el();
+            if (!node) return Promise.resolve();
+            const wait = typeof delayMs === 'number' ? delayMs : 0;
+            return new Promise(function (resolve) {
+                setTimeout(function () {
+                    node.classList.add('is-hiding');
+                    setTimeout(function () {
+                        node.hidden = true;
+                        node.setAttribute('aria-hidden', 'true');
+                        node.classList.remove('is-hiding');
+                        resolve();
+                    }, 450);
+                }, wait);
+            });
+        }
+
+        /** Show splash for at least minMs, then hide. */
+        function run(minMs) {
+            show();
+            return hide(typeof minMs === 'number' ? minMs : 900);
+        }
+
+        return { show: show, hide: hide, run: run };
+    })();
+</script>
