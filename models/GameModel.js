@@ -50,6 +50,9 @@ if (useSupabase) {
         doBounty: { type: Boolean, default: true },
         doEscort: { type: Boolean, default: false },
         vsBots: { type: Boolean, default: false },
+        // Bots-only: short-session pacing via a dedicated seconds tick (human MP stays on hourly cron)
+        quickMatch: { type: Boolean, default: false },
+        isTutorial: { type: Boolean, default: false },
 
         actions: [ActionSchema],
         actionLog: [ActionSchema]

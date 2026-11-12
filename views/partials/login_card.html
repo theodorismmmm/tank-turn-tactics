@@ -3,6 +3,7 @@
         <button type="button" class="auth-tab is-active" data-tab="login" role="tab" aria-selected="true"><%= t('auth.login') %></button>
         <button type="button" class="auth-tab" data-tab="guest" role="tab" aria-selected="false"><%= t('auth.guestTab') %></button>
         <button type="button" class="auth-tab" data-tab="bots" role="tab" aria-selected="false"><%= t('auth.botsTab') %></button>
+        <button type="button" class="auth-tab" data-tab="tutorial" role="tab" aria-selected="false"><%= t('auth.tutorialTab') %></button>
         <button type="button" class="auth-tab" data-tab="debug" id="debug-tab" role="tab" aria-selected="false"><%= t('auth.debugTab') %></button>
     </div>
 
@@ -39,6 +40,15 @@
         <p class="error" data-error-bots></p>
         <form action="/auth/bots" method="post">
             <button type="submit"><%= t('auth.playBots') %></button>
+        </form>
+    </div>
+
+    <div class="auth-panel" data-panel="tutorial" role="tabpanel" hidden>
+        <h2><%= t('auth.tutorialTab') %></h2>
+        <p class="auth-copy"><%= t('auth.tutorialBlurb') %></p>
+        <p class="error" data-error-tutorial></p>
+        <form action="/auth/tutorial" method="post">
+            <button type="submit"><%= t('auth.playTutorial') %></button>
         </form>
     </div>
 
@@ -107,6 +117,7 @@
         let initialTab = 'login';
         if (params.get('tab') === 'guest' || error === 'guest') initialTab = 'guest';
         else if (params.get('tab') === 'bots' || error === 'bots') initialTab = 'bots';
+        else if (params.get('tab') === 'tutorial' || error === 'tutorial') initialTab = 'tutorial';
         else if (params.get('tab') === 'debug') initialTab = 'debug';
 
         function setTab(name) {
@@ -155,6 +166,9 @@
         } else if (error === 'bots') {
             const node = document.querySelector('[data-error-bots]');
             if (node) node.textContent = window.t('auth.botsFailed');
+        } else if (error === 'tutorial') {
+            const node = document.querySelector('[data-error-tutorial]');
+            if (node) node.textContent = window.t('auth.tutorialFailed');
         } else if (error === 'debug') {
             const node = document.querySelector('[data-error-debug]');
             if (node) node.textContent = window.t('auth.debugFailed');

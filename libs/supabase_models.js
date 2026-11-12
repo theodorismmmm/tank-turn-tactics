@@ -65,6 +65,8 @@ function mapRow(row) {
     doc.doBounty = row.do_bounty;
     doc.doEscort = row.do_escort;
     doc.vsBots = row.vs_bots;
+    doc.quickMatch = row.quick_match;
+    doc.isTutorial = row.is_tutorial;
     doc.isBot = row.is_bot;
     doc.actionLog = row.action_log || [];
     doc.actions = row.actions || [];
@@ -111,6 +113,12 @@ function gameToRow(data) {
     }
     if (data.vsBots !== undefined || data.vs_bots !== undefined) {
         row.vs_bots = data.vsBots ?? data.vs_bots;
+    }
+    if (data.quickMatch !== undefined || data.quick_match !== undefined) {
+        row.quick_match = data.quickMatch ?? data.quick_match;
+    }
+    if (data.isTutorial !== undefined || data.is_tutorial !== undefined) {
+        row.is_tutorial = data.isTutorial ?? data.is_tutorial;
     }
     if (data.actions !== undefined) row.actions = data.actions;
     if (data.actionLog !== undefined || data.action_log !== undefined) {
@@ -276,6 +284,8 @@ const Game = function Game(data = {}) {
         doFogOfWar: data.doFogOfWar ?? false,
         doBounty: data.doBounty ?? true,
         vsBots: data.vsBots ?? false,
+        quickMatch: data.quickMatch ?? false,
+        isTutorial: data.isTutorial ?? false,
         actions: data.actions ?? [],
         actionLog: data.actionLog ?? []
     });

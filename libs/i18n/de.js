@@ -14,7 +14,8 @@ module.exports = {
         howToPlay: 'Spielanleitung',
         credits: 'Credits',
         debug: 'Debug',
-        bots: 'Bots'
+        bots: 'Bots',
+        tutorial: 'Tutorial'
     },
     auth: {
         login: 'Anmelden',
@@ -40,17 +41,32 @@ module.exports = {
         enterDebug: 'Debug starten',
         debugFailed: 'Debug-Sitzung konnte nicht gestartet werden. Bitte erneut versuchen.',
         botsTab: 'Bots',
-        botsBlurb: 'Sofort gegen KI-Panzer spielen, die sich bewegen, angreifen und Energie wie echte Spieler verbrauchen.',
-        playBots: 'Gegen Bots spielen',
-        botsFailed: 'Bot-Match konnte nicht gestartet werden. Bitte erneut versuchen.'
+        botsBlurb: 'Schnellmatch gegen KI-Panzer. Sie bewegen sich, greifen an und verbrauchen Energie wie echte Spieler — AP alle paar Sekunden.',
+        playBots: 'Schnellmatch gegen Bots',
+        botsFailed: 'Bot-Match konnte nicht gestartet werden. Bitte erneut versuchen.',
+        tutorialTab: 'Tutorial',
+        tutorialBlurb: 'Geführtes Schnellmatch: lerne Bewegen und Angreifen mit Hinweisen, während du gegen ein paar Bots spielst.',
+        playTutorial: 'Tutorial starten',
+        tutorialFailed: 'Tutorial konnte nicht gestartet werden. Bitte erneut versuchen.'
     },
     bots: {
         title: 'Gegen Bots spielen',
         blurb: 'Starte ein Match gegen KI-Gegner. Sie nutzen dieselben Panzer, HP und Aktionspunkte wie Menschen — bewege dich, und sie antworten.',
         botCount: 'Gegner:',
         mapSize: 'Kartengröße:',
+        pace: 'Tempo:',
+        paceQuick: 'Schnell (AP ca. alle 15s)',
+        paceClassic: 'Klassisch (stündlich AP)',
+        paceNote: 'Schnell ist sitzungslang. Klassisch nutzt die normale Multiplayer-Uhr.',
         play: 'Match starten',
         failed: 'Bot-Match konnte nicht erstellt werden. Bitte erneut versuchen.'
+    },
+    tutorial: {
+        title: 'Tutorial',
+        blurb: 'Kurzes geführtes Bot-Match. Hinweise erklären Bewegen und Angreifen — danach spielst du frei weiter.',
+        play: 'Tutorial starten',
+        failed: 'Tutorial-Match konnte nicht erstellt werden. Bitte erneut versuchen.',
+        paceNote: 'Nutzt Schnell-Tempo: Aktionspunkte ca. alle 15 Sekunden.'
     },
     debug: {
         title: 'Debug-Konsole',
@@ -149,7 +165,31 @@ module.exports = {
         killedBy: 'Du wurdest von {name} getötet',
         bounty: 'Kopfgeld: {name}',
         interval: 'Intervall: {n}h',
-        perInterval: '+{n} AP / Runde'
+        perInterval: '+{n} AP / Runde',
+        quickInterval: 'Schnell: AP ca. alle {n}s',
+        controlsTitle: 'Steuerung',
+        controlsIdle: 'Klicke deinen Panzer für Bewegen / Angriff',
+        controlsReady: 'Klicke Bewegen oder Angriff unter deinem Panzer',
+        controlsOutOfEnergy: 'Keine Energie — warte auf den nächsten AP-Tick',
+        controlsMove: 'Bewegen: Feld anklicken, Ziel nochmal (oder Enter) zum Bestätigen',
+        controlsAttack: 'Angriff: Gegner in Reichweite anklicken, nochmal zum Feuern',
+        helpBanner: 'Panzer wählen → Bewegen / Angriff erscheinen darunter. Jede Aktion kostet Energie (AP).'
+    },
+    coach: {
+        step: 'Schritt {n}/{total}',
+        skip: 'Hinweise überspringen',
+        next: 'Weiter',
+        done: 'Alles klar',
+        welcomeTitle: 'Willkommen',
+        welcomeBody: 'Dies ist ein Schnell-Bot-Match. Energie (AP) regeneriert ca. alle 15 Sekunden.',
+        selectTitle: 'Dein Panzer',
+        selectBody: 'Klicke deinen cyanfarbenen Panzer. Darunter erscheinen Bewegen, Angriff und Support.',
+        moveTitle: 'Bewegen',
+        moveBody: 'Klicke Bewegen, dann ein nahes Feld für den Pfad. Ziel nochmal anklicken (oder Enter) zum Losfahren.',
+        attackTitle: 'Angriff',
+        attackBody: 'Klicke Angriff, dann einen Gegner in deinem Reichweitenring. Nochmal klicken zum Feuern. Scrollen ändert den Schaden.',
+        finishTitle: 'Bereit',
+        finishBody: 'Weiter bewegen und angreifen. Bots verbrauchen AP wie du. Viel Erfolg!'
     },
     howToPlay: {
         title: 'Spielanleitung'

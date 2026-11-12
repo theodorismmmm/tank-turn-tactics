@@ -7,6 +7,10 @@ const { assignBounties, actionPointCost } = require('../libs/game_utils.js');
 
 let cronString = '0 * * * *';
 
+// Quick bots matches tick on a short interval so AP regenerates in-session.
+// Human multiplayer still uses the hourly (or INTERVAL_MODE) cron below.
+const QUICK_TICK_MS = Number(process.env.QUICK_TICK_MS) || 15000;
+
 if (process.env.INTERVAL_MODE) {
     if (process.env.INTERVAL_MODE === 'minute') {
         cronString = '0 * * * * *';
@@ -14,15 +18,31 @@ if (process.env.INTERVAL_MODE) {
     }
 }
 
+async function runSchedulerPass(filter = {}) {
+    const allGames = await Game.find({ hasStarted: true, ...filter });
+
+    console.log(`[app] Actions distributed! (${Object.keys(filter).length ? 'quick' : 'cron'}) - ` + new Date());
+    await Promise.all(allGames.map(async (game) => {
+        try {
+            await performActions(game);
+        } catch (err) {
+            console.error(`[app] Failed processing game ${game && game._id}:`, err);
+        }
+    }));
+
+    return allGames;
+}
+
 // Avoid starting the cron while unit tests import helpers from this module
 if (!process.env.JEST_WORKER_ID) {
     schedule.scheduleJob(cronString, async function() {
-        // Get all started games
+        // Hourly/minute pass for normal human multiplayer (and classic bots).
+        // Skip quickMatch vs-bots — those are handled by the seconds timer.
         const allGames = await Game.find({ hasStarted: true });
+        const cronGames = (Array.isArray(allGames) ? allGames : []).filter(g => !(g.vsBots && g.quickMatch));
 
-        // Distribute actions / resolve queues — isolate per-game failures
-        console.log("[app] Actions distributed! - " + new Date());
-        await Promise.all(allGames.map(async (game) => {
+        console.log("[app] Actions distributed! (cron) - " + new Date());
+        await Promise.all(cronGames.map(async (game) => {
             try {
                 await performActions(game);
             } catch (err) {
@@ -31,8 +51,8 @@ if (!process.env.JEST_WORKER_ID) {
         }));
 
         // Remove old games
-        for (let i = 0; i < allGames.length; i++) {
-            const game = allGames[i];
+        for (let i = 0; i < cronGames.length; i++) {
+            const game = cronGames[i];
             try {
                 const players = await Player.find({ game_id: game._id })
 
@@ -44,6 +64,26 @@ if (!process.env.JEST_WORKER_ID) {
             }
         }
     });
+
+    setInterval(async () => {
+        try {
+            const allGames = await Game.find({ hasStarted: true });
+            const quickGames = (Array.isArray(allGames) ? allGames : []).filter(g => g.vsBots && g.quickMatch);
+            if (!quickGames.length) return;
+
+            await Promise.all(quickGames.map(async (game) => {
+                try {
+                    await performActions(game);
+                } catch (err) {
+                    console.error(`[app] Quick tick failed for ${game && game._id}:`, err);
+                }
+            }));
+        } catch (err) {
+            console.error('[app] Quick match scheduler failed:', err);
+        }
+    }, QUICK_TICK_MS);
+
+    console.log(`[app] Quick bots tick every ${QUICK_TICK_MS}ms`)
 }
 
 async function performActions(game) {
@@ -208,3 +248,5 @@ async function doActionQueue(game, players) {
 module.exports.performActions = performActions;
 module.exports.doActionQueue = doActionQueue;
 module.exports.distributeActions = distributeActions;
+module.exports.QUICK_TICK_MS = QUICK_TICK_MS;
+module.exports.runSchedulerPass = runSchedulerPass;

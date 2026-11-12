@@ -7,6 +7,27 @@ const { move, attack, upgrade, logAction } = require('./ActionController.js');
 const BOT_NAMES = ['Viper', 'Nomad', 'Rook', 'Cipher', 'Halo', 'Orbit', 'Quill', 'Axon'];
 const BOT_COLORS = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd', '#10ac84', '#ff9ff3', '#48dbfb', '#c8d6e5'];
 
+/** Session-length bots pacing. Human multiplayer still uses the hourly cron. */
+const PACE = {
+    quick: {
+        quickMatch: true,
+        turnTime: 1,
+        actionsPerInterval: 3,
+        startingActions: 3
+    },
+    classic: {
+        quickMatch: false,
+        turnTime: 1,
+        actionsPerInterval: 1,
+        startingActions: 1
+    }
+};
+
+function resolvePace(pace) {
+    const key = String(pace || 'quick').toLowerCase();
+    return PACE[key] || PACE.quick;
+}
+
 function sameId(a, b) {
     if (a == null || b == null) return false;
     return String(a) === String(b);
@@ -65,24 +86,31 @@ async function createBotPlayer(game, index) {
 
 /**
  * Create and immediately start a vs-bots match for the given human user.
+ * Default pace is Quick (seconds tick + more AP) so matches feel session-length.
  */
 async function createVsBotsGame(humanUser, opts = {}) {
-    const botCount = Math.min(6, Math.max(1, parseInt(opts.botCount, 10) || 3));
-    const size = Math.min(16, Math.max(6, parseInt(opts.size, 10) || 8));
+    const isTutorial = !!opts.isTutorial;
+    const botCount = Math.min(6, Math.max(1, parseInt(opts.botCount, 10) || (isTutorial ? 2 : 3)));
+    const size = Math.min(16, Math.max(6, parseInt(opts.size, 10) || (isTutorial ? 6 : 8)));
+    const pace = resolvePace(opts.pace || 'quick');
 
     const game = await new Game({
-        name: opts.name || `Bots vs ${displayName(humanUser)}`,
+        name: opts.name || (isTutorial
+            ? `Tutorial — ${displayName(humanUser)}`
+            : `Bots vs ${displayName(humanUser)}`),
         size: { width: size, height: size },
         creator_id: humanUser.id || humanUser._id,
-        turnTime: 1,
+        turnTime: pace.turnTime,
         turnTimePassed: 0,
-        actionsPerInterval: 1,
+        actionsPerInterval: pace.actionsPerInterval,
         doActionQueue: false,
         doBroadcastAction: true,
         doFogOfWar: false,
         doBounty: false,
         allowAlwaysJoin: false,
         vsBots: true,
+        quickMatch: pace.quickMatch,
+        isTutorial,
         hasStarted: false
     }).save();
 
@@ -91,7 +119,7 @@ async function createVsBotsGame(humanUser, opts = {}) {
         game_id: game._id,
         name: opts.displayName || displayName(humanUser),
         color: '#00ffc3',
-        actions: 1,
+        actions: pace.startingActions,
         isBot: false
     }).save();
 
@@ -99,6 +127,12 @@ async function createVsBotsGame(humanUser, opts = {}) {
     for (let i = 0; i < botCount; i++) {
         bots.push(await createBotPlayer(game, i));
     }
+
+    // Align bot starting AP with the chosen pace
+    await Promise.all(bots.map(async (bot) => {
+        bot.actions = pace.startingActions;
+        return bot.save();
+    }));
 
     const players = [human, ...bots];
     const locations = assignLocation(players.length, game.size);
@@ -225,41 +259,73 @@ module.exports.createVsBotsGame = createVsBotsGame;
 module.exports.runBotsForGame = runBotsForGame;
 module.exports.thinkBot = thinkBot;
 
+function redirectBotsError(res, isTutorial) {
+    return res.redirect(isTutorial ? '/tutorial?error=true' : '/bots?error=true');
+}
+
 /** HTTP: start a fresh vs-bots match for the logged-in user. */
 module.exports.startBotsMatch = async function startBotsMatch(req, res) {
+    const isTutorial = !!(req.body && (req.body.isTutorial === 'true' || req.body.isTutorial === true || req.body.tutorial === 'true'));
     try {
-        const botCount = req.body && req.body.botCount != null ? req.body.botCount : 3;
+        const botCount = req.body && req.body.botCount != null
+            ? req.body.botCount
+            : (isTutorial ? 2 : 3);
         const game = await createVsBotsGame(req.user, {
             botCount,
             displayName: req.body && req.body.displayName,
-            size: req.body && req.body.size
+            size: req.body && req.body.size,
+            pace: (req.body && req.body.pace) || 'quick',
+            isTutorial
         });
         const id = game._id && game._id.toString ? game._id.toString() : String(game._id || game.id);
         return res.redirect(`/play?game=${id}`);
     } catch (err) {
         console.error('[bots] startBotsMatch', err);
-        return res.redirect('/bots?error=true');
+        return redirectBotsError(res, isTutorial);
     }
 };
 
-/** Passwordless login tab → guest session + auto vs-bots match. */
-module.exports.botsLoginAndPlay = async function botsLoginAndPlay(req, res, next) {
+async function guestBotsLogin(req, res, next, opts = {}) {
+    const tab = opts.isTutorial ? 'tutorial' : 'bots';
     try {
         const { createGuestUser } = require('./AuthController.js');
         const user = await createGuestUser();
         req.login(user, async (err) => {
             if (err) return next(err);
             try {
-                const game = await createVsBotsGame(user, { botCount: 3 });
+                const game = await createVsBotsGame(user, {
+                    botCount: opts.botCount != null ? opts.botCount : (opts.isTutorial ? 2 : 3),
+                    size: opts.size,
+                    pace: opts.pace || 'quick',
+                    isTutorial: !!opts.isTutorial
+                });
                 const id = game._id && game._id.toString ? game._id.toString() : String(game._id || game.id);
                 return res.redirect(`/play?game=${id}`);
             } catch (e) {
-                console.error('[bots] botsLoginAndPlay create', e);
-                return res.redirect('/login?error=bots&tab=bots');
+                console.error('[bots] guestBotsLogin create', e);
+                return res.redirect(`/login?error=${tab}&tab=${tab}`);
             }
         });
     } catch (err) {
-        console.error('[bots] botsLoginAndPlay', err);
-        return res.redirect('/login?error=bots&tab=bots');
+        console.error('[bots] guestBotsLogin', err);
+        return res.redirect(`/login?error=${tab}&tab=${tab}`);
     }
+}
+
+/** Passwordless login tab → guest session + quick vs-bots match. */
+module.exports.botsLoginAndPlay = async function botsLoginAndPlay(req, res, next) {
+    return guestBotsLogin(req, res, next, { pace: 'quick', botCount: 3 });
 };
+
+/** Tutorial tab → guest session + guided quick match. */
+module.exports.tutorialLoginAndPlay = async function tutorialLoginAndPlay(req, res, next) {
+    return guestBotsLogin(req, res, next, {
+        pace: 'quick',
+        botCount: 2,
+        size: 6,
+        isTutorial: true
+    });
+};
+
+module.exports.PACE = PACE;
+module.exports.resolvePace = resolvePace;

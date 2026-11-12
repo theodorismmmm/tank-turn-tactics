@@ -56,11 +56,24 @@ router.get('/create-game', isLoggedIn, (req, res) => {
 router.get('/bots', isLoggedIn, (req, res) => {
     res.render('pages/bots', {
         name: displayName(req.user),
-        error: req.query.error === 'true'
+        error: req.query.error === 'true',
+        isTutorial: false
+    })
+})
+
+router.get('/tutorial', isLoggedIn, (req, res) => {
+    res.render('pages/bots', {
+        name: displayName(req.user),
+        error: req.query.error === 'true',
+        isTutorial: true
     })
 })
 
 router.post('/bots/start', isLoggedIn, startBotsMatch)
+router.post('/tutorial/start', isLoggedIn, (req, res, next) => {
+    req.body = { ...(req.body || {}), isTutorial: 'true', pace: 'quick', botCount: req.body?.botCount || 2, size: req.body?.size || 6 };
+    return startBotsMatch(req, res, next);
+})
 
 router.get('/join/:gameId?', isLoggedIn, (req, res, next) => {
     const { gameId } = req.params;

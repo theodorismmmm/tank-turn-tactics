@@ -7,6 +7,7 @@
     <a class="navItem" href="/join"><%= t('nav.join') %></a>
     <a class="navItem" href="/create-game"><%= t('nav.create') %></a>
     <a class="navItem" href="/bots"><%= t('nav.bots') %></a>
+    <a class="navItem" href="/tutorial"><%= t('nav.tutorial') %></a>
     <% if (typeof currentUser !== 'undefined' && currentUser && (currentUser.debug || currentUser.admin)) { %>
     <a class="navItem" href="/debug"><%= t('nav.debug') %></a>
     <% } %>

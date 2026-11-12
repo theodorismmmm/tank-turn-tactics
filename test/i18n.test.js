@@ -14,9 +14,14 @@ describe('i18n', () => {
         expect(t('en', 'create.hours', { n: 12 })).toBe('12 hours');
         expect(t('en', 'auth.debugTab')).toBe('Debug');
         expect(t('en', 'auth.botsTab')).toBe('Bots');
+        expect(t('en', 'auth.tutorialTab')).toBe('Tutorial');
+        expect(t('en', 'bots.paceQuick')).toMatch(/Quick/i);
+        expect(t('en', 'game.helpBanner')).toMatch(/Move/i);
         expect(t('de', 'bots.title')).toBe('Gegen Bots spielen');
+        expect(t('de', 'tutorial.title')).toBe('Tutorial');
         expect(t('de', 'debug.title')).toBe('Debug-Konsole');
         expect(t('en', 'debug.subtitle', { name: 'debug_abc' })).toBe('Signed in as debug_abc');
+        expect(t('en', 'coach.moveTitle')).toBe('Move');
     });
 
     it('falls back to english for missing keys', () => {

@@ -14,7 +14,8 @@ module.exports = {
         howToPlay: 'How to play',
         credits: 'Credits',
         debug: 'Debug',
-        bots: 'Bots'
+        bots: 'Bots',
+        tutorial: 'Tutorial'
     },
     auth: {
         login: 'Login',
@@ -40,17 +41,32 @@ module.exports = {
         enterDebug: 'Enter Debug',
         debugFailed: 'Could not start debug session. Try again.',
         botsTab: 'Bots',
-        botsBlurb: 'Jump straight into a live match against AI tanks that move, attack, and spend energy like real players.',
-        playBots: 'Play vs Bots',
-        botsFailed: 'Could not start a bots match. Try again.'
+        botsBlurb: 'Jump into a quick match against AI tanks. They move, attack, and spend energy like real players — with AP every few seconds.',
+        playBots: 'Quick match vs Bots',
+        botsFailed: 'Could not start a bots match. Try again.',
+        tutorialTab: 'Tutorial',
+        tutorialBlurb: 'A guided quick match: learn how to move and attack with on-screen prompts while fighting a couple of bots.',
+        playTutorial: 'Start Tutorial',
+        tutorialFailed: 'Could not start the tutorial. Try again.'
     },
     bots: {
         title: 'Play vs Bots',
         blurb: 'Start a match against AI opponents. They use the same tanks, health, and action points as humans — move and they will answer.',
         botCount: 'Opponents:',
         mapSize: 'Map size:',
+        pace: 'Pace:',
+        paceQuick: 'Quick (AP every ~15s)',
+        paceClassic: 'Classic (hourly AP)',
+        paceNote: 'Quick is session-length. Classic uses the normal multiplayer clock.',
         play: 'Start match',
         failed: 'Could not create the bots match. Please try again.'
+    },
+    tutorial: {
+        title: 'Tutorial',
+        blurb: 'Play a short guided bots match. Hints walk you through Move and Attack — then you finish the fight yourself.',
+        play: 'Start tutorial',
+        failed: 'Could not create the tutorial match. Please try again.',
+        paceNote: 'Uses Quick pace so you get action points every ~15 seconds.'
     },
     debug: {
         title: 'Debug Console',
@@ -149,7 +165,31 @@ module.exports = {
         killedBy: 'You were killed by {name}',
         bounty: 'Bounty: {name}',
         interval: 'Interval: {n}h',
-        perInterval: '+{n} AP / turn'
+        perInterval: '+{n} AP / turn',
+        quickInterval: 'Quick: AP every ~{n}s',
+        controlsTitle: 'How to play',
+        controlsIdle: 'Click your tank to show Move / Attack',
+        controlsReady: 'Click Move or Attack under your tank',
+        controlsOutOfEnergy: 'Out of energy — wait for the next AP tick',
+        controlsMove: 'Move: click a square to path, click the end again (or Enter) to go',
+        controlsAttack: 'Attack: click an enemy in range, then click again to fire',
+        helpBanner: 'Select your tank → Move / Attack buttons appear under it. Each action costs energy (AP).'
+    },
+    coach: {
+        step: 'Step {n}/{total}',
+        skip: 'Skip tips',
+        next: 'Next',
+        done: 'Got it',
+        welcomeTitle: 'Welcome',
+        welcomeBody: 'This is a quick bots match. Energy (AP) regenerates every ~15 seconds so you can keep playing.',
+        selectTitle: 'Your tank',
+        selectBody: 'Click your cyan tank. Move, Attack, and Support buttons appear under it.',
+        moveTitle: 'Move',
+        moveBody: 'Click Move, then click a nearby square to set a path. Click the destination again (or press Enter) to commit.',
+        attackTitle: 'Attack',
+        attackBody: 'Click Attack, then click an enemy tank in your range ring. Click again to fire. Scroll to change damage.',
+        finishTitle: 'You\'re ready',
+        finishBody: 'Keep moving and attacking. Bots spend AP like you do. Good luck!'
     },
     howToPlay: {
         title: 'How to play'

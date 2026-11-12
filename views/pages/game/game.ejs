@@ -87,6 +87,21 @@
     <p id="minorHint"></p>
 </div>
 
+<div id="helpBanner" class="panel" hidden>
+    <p></p>
+    <button type="button" id="helpBannerDismiss" aria-label="Dismiss">×</button>
+</div>
+
+<div id="tutorialCoach" class="panel" hidden>
+    <div class="coach-top">
+        <span id="coachStepLabel"></span>
+        <button type="button" id="coachSkip"></button>
+    </div>
+    <h3 id="coachTitle"></h3>
+    <p id="coachBody"></p>
+    <button type="button" id="coachNext"></button>
+</div>
+
 
 <script type="text/javascript" src="js/game-engine/Game.js"></script>
 <script type="text/javascript" src="js/game/background/GridBox.js"></script>
@@ -660,8 +675,86 @@
         statsPanel.querySelector('#gameTime').innerHTML = dateTimeDiff(new Date(), new Date(game.startedAt))
     }
 
-    statsPanel.querySelector('#actionInterval').innerHTML = window.t('game.interval', { n: game.turnTime });
+    if (game.quickMatch && game.vsBots) {
+        statsPanel.querySelector('#actionInterval').innerHTML = window.t('game.quickInterval', { n: 15 });
+    } else {
+        statsPanel.querySelector('#actionInterval').innerHTML = window.t('game.interval', { n: game.turnTime });
+    }
     statsPanel.querySelector('#actionsPerInterval').innerHTML = window.t('game.perInterval', { n: game.actionsPerInterval });
+
+    // Lightweight discoverability for bots / quick matches (and anyone short on AP knowledge)
+    (function initHelpBanner() {
+        const banner = document.querySelector('#helpBanner');
+        if (!banner) return;
+        const key = 'ttt-help-banner-dismissed';
+        if (localStorage.getItem(key) === '1' && !game.isTutorial) {
+            banner.hidden = true;
+            return;
+        }
+        if (game.vsBots || game.quickMatch || game.isTutorial) {
+            banner.hidden = false;
+            banner.querySelector('p').textContent = window.t('game.helpBanner');
+            document.querySelector('#helpBannerDismiss').onclick = () => {
+                banner.hidden = true;
+                localStorage.setItem(key, '1');
+            };
+        }
+    })();
+
+    (function initTutorialCoach() {
+        const coach = document.querySelector('#tutorialCoach');
+        if (!coach || !game.isTutorial) return;
+
+        const steps = [
+            { title: 'coach.welcomeTitle', body: 'coach.welcomeBody' },
+            { title: 'coach.selectTitle', body: 'coach.selectBody' },
+            { title: 'coach.moveTitle', body: 'coach.moveBody' },
+            { title: 'coach.attackTitle', body: 'coach.attackBody' },
+            { title: 'coach.finishTitle', body: 'coach.finishBody', last: true }
+        ];
+        let step = 0;
+
+        function render() {
+            const s = steps[step];
+            coach.hidden = false;
+            document.querySelector('#coachStepLabel').textContent = window.t('coach.step', { n: step + 1, total: steps.length });
+            document.querySelector('#coachTitle').textContent = window.t(s.title);
+            document.querySelector('#coachBody').textContent = window.t(s.body);
+            document.querySelector('#coachSkip').textContent = window.t('coach.skip');
+            document.querySelector('#coachNext').textContent = s.last ? window.t('coach.done') : window.t('coach.next');
+        }
+
+        function dismiss() {
+            coach.hidden = true;
+        }
+
+        document.querySelector('#coachSkip').onclick = dismiss;
+        document.querySelector('#coachNext').onclick = () => {
+            if (step >= steps.length - 1) {
+                dismiss();
+                return;
+            }
+            step += 1;
+            render();
+        };
+
+        // Auto-advance when the player enters Move / Attack modes
+        const prevStateRef = { value: actionState };
+        setInterval(() => {
+            if (coach.hidden) return;
+            if (prevStateRef.value === actionState) return;
+            prevStateRef.value = actionState;
+            if (actionState === ACTION_STATES.MV && step < 2) {
+                step = 2;
+                render();
+            } else if (actionState === ACTION_STATES.ATK && step < 3) {
+                step = 3;
+                render();
+            }
+        }, 400);
+
+        render();
+    })();
 
     function updateBountyLabel() {
         const bountyEl = statsPanel.querySelector('#bountyTarget');
