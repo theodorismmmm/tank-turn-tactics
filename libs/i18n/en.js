@@ -13,7 +13,8 @@ module.exports = {
         changelog: 'Changelog',
         howToPlay: 'How to play',
         credits: 'Credits',
-        debug: 'Debug'
+        debug: 'Debug',
+        bots: 'Bots'
     },
     auth: {
         login: 'Login',
@@ -37,7 +38,19 @@ module.exports = {
         debugFeatureQueue: 'Inspect, resolve, or clear the action queue',
         debugNoPassword: 'No password required.',
         enterDebug: 'Enter Debug',
-        debugFailed: 'Could not start debug session. Try again.'
+        debugFailed: 'Could not start debug session. Try again.',
+        botsTab: 'Bots',
+        botsBlurb: 'Jump straight into a live match against AI tanks that move, attack, and spend energy like real players.',
+        playBots: 'Play vs Bots',
+        botsFailed: 'Could not start a bots match. Try again.'
+    },
+    bots: {
+        title: 'Play vs Bots',
+        blurb: 'Start a match against AI opponents. They use the same tanks, health, and action points as humans — move and they will answer.',
+        botCount: 'Opponents:',
+        mapSize: 'Map size:',
+        play: 'Start match',
+        failed: 'Could not create the bots match. Please try again.'
     },
     debug: {
         title: 'Debug Console',

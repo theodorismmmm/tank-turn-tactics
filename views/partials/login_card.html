@@ -2,6 +2,7 @@
     <div class="auth-tabs" role="tablist" aria-label="Auth">
         <button type="button" class="auth-tab is-active" data-tab="login" role="tab" aria-selected="true"><%= t('auth.login') %></button>
         <button type="button" class="auth-tab" data-tab="guest" role="tab" aria-selected="false"><%= t('auth.guestTab') %></button>
+        <button type="button" class="auth-tab" data-tab="bots" role="tab" aria-selected="false"><%= t('auth.botsTab') %></button>
         <button type="button" class="auth-tab" data-tab="debug" id="debug-tab" role="tab" aria-selected="false"><%= t('auth.debugTab') %></button>
     </div>
 
@@ -32,6 +33,15 @@
         </form>
     </div>
 
+    <div class="auth-panel" data-panel="bots" role="tabpanel" hidden>
+        <h2><%= t('auth.botsTab') %></h2>
+        <p class="auth-copy"><%= t('auth.botsBlurb') %></p>
+        <p class="error" data-error-bots></p>
+        <form action="/auth/bots" method="post">
+            <button type="submit"><%= t('auth.playBots') %></button>
+        </form>
+    </div>
+
     <!-- Hidden form: Debug tab enters immediately (splash → login) -->
     <form id="debug-login-form" action="/auth/debug" method="post" hidden aria-hidden="true"></form>
     <p class="error" data-error-debug></p>
@@ -46,6 +56,7 @@
 
     .auth-tabs {
         display: flex;
+        flex-wrap: wrap;
         gap: 2px;
         margin-bottom: 18px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.14);
@@ -93,9 +104,10 @@
     (function () {
         const params = new URLSearchParams(window.location.search);
         const error = params.get('error');
-        const initialTab = params.get('tab') === 'guest' || error === 'guest'
-            ? 'guest'
-            : 'login';
+        let initialTab = 'login';
+        if (params.get('tab') === 'guest' || error === 'guest') initialTab = 'guest';
+        else if (params.get('tab') === 'bots' || error === 'bots') initialTab = 'bots';
+        else if (params.get('tab') === 'debug') initialTab = 'debug';
 
         function setTab(name) {
             if (name === 'debug') {
@@ -131,24 +143,24 @@
             });
         });
 
-        setTab(initialTab);
+        if (initialTab === 'debug' && error !== 'debug') {
+            enterDebug();
+        } else {
+            setTab(initialTab === 'debug' ? 'login' : initialTab);
+        }
 
         if (error === 'guest') {
             const node = document.querySelector('[data-error-guest]');
             if (node) node.textContent = window.t('auth.guestFailed');
+        } else if (error === 'bots') {
+            const node = document.querySelector('[data-error-bots]');
+            if (node) node.textContent = window.t('auth.botsFailed');
         } else if (error === 'debug') {
             const node = document.querySelector('[data-error-debug]');
             if (node) node.textContent = window.t('auth.debugFailed');
-            // Auto-retry UX: stay on login, do not re-open splash
-            setTab('login');
         } else if (error) {
             const node = document.querySelector('[data-error-login]');
             if (node) node.textContent = window.t('auth.invalidCredentials');
-        }
-
-        // Deep link: /login?tab=debug → enter immediately
-        if (params.get('tab') === 'debug' && error !== 'debug') {
-            enterDebug();
         }
     })();
 </script>

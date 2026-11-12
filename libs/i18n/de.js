@@ -13,7 +13,8 @@ module.exports = {
         changelog: 'Änderungen',
         howToPlay: 'Spielanleitung',
         credits: 'Credits',
-        debug: 'Debug'
+        debug: 'Debug',
+        bots: 'Bots'
     },
     auth: {
         login: 'Anmelden',
@@ -37,7 +38,19 @@ module.exports = {
         debugFeatureQueue: 'Aktionswarteschlange prüfen, auflösen oder leeren',
         debugNoPassword: 'Kein Passwort nötig.',
         enterDebug: 'Debug starten',
-        debugFailed: 'Debug-Sitzung konnte nicht gestartet werden. Bitte erneut versuchen.'
+        debugFailed: 'Debug-Sitzung konnte nicht gestartet werden. Bitte erneut versuchen.',
+        botsTab: 'Bots',
+        botsBlurb: 'Sofort gegen KI-Panzer spielen, die sich bewegen, angreifen und Energie wie echte Spieler verbrauchen.',
+        playBots: 'Gegen Bots spielen',
+        botsFailed: 'Bot-Match konnte nicht gestartet werden. Bitte erneut versuchen.'
+    },
+    bots: {
+        title: 'Gegen Bots spielen',
+        blurb: 'Starte ein Match gegen KI-Gegner. Sie nutzen dieselben Panzer, HP und Aktionspunkte wie Menschen — bewege dich, und sie antworten.',
+        botCount: 'Gegner:',
+        mapSize: 'Kartengröße:',
+        play: 'Match starten',
+        failed: 'Bot-Match konnte nicht erstellt werden. Bitte erneut versuchen.'
     },
     debug: {
         title: 'Debug-Konsole',

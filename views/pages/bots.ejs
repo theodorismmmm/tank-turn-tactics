@@ -1,0 +1,79 @@
+<%- include('../partials/head.html') %>
+
+<div class="section">
+    <%- include('../partials/header.html') %>
+
+    <div class="area">
+        <h1><%= t('bots.title') %></h1>
+        <p class="bots-copy"><%= t('bots.blurb') %></p>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <p class="error"><%= t('bots.failed') %></p>
+        <% } %>
+
+        <form action="/bots/start" method="post" class="bots-form">
+            <label>
+                <%= t('bots.botCount') %>
+                <select name="botCount">
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </label>
+
+            <label>
+                <%= t('bots.mapSize') %>
+                <select name="size">
+                    <option value="6">6×6</option>
+                    <option value="8" selected>8×8</option>
+                    <option value="10">10×10</option>
+                </select>
+            </label>
+
+            <label>
+                <%= t('player.displayName') %>
+                <input type="text" name="displayName" maxlength="24" placeholder="<%= name %>" />
+            </label>
+
+            <button type="submit"><%= t('bots.play') %></button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .bots-copy {
+        opacity: 0.85;
+        max-width: 36em;
+        line-height: 1.45;
+        margin-bottom: 18px;
+    }
+
+    .bots-form {
+        display: grid;
+        gap: 12px;
+        max-width: 320px;
+    }
+
+    .bots-form label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .bots-form select,
+    .bots-form input {
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: inherit;
+        padding: 6px 8px;
+        min-width: 120px;
+    }
+
+    .error {
+        color: #ff7b7b;
+    }
+</style>
+
+<%- include('../partials/footer.html') %>

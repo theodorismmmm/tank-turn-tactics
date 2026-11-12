@@ -13,6 +13,8 @@ describe('i18n', () => {
         expect(t('de', 'home.welcome', { name: 'Theo' })).toBe('Willkommen, Theo');
         expect(t('en', 'create.hours', { n: 12 })).toBe('12 hours');
         expect(t('en', 'auth.debugTab')).toBe('Debug');
+        expect(t('en', 'auth.botsTab')).toBe('Bots');
+        expect(t('de', 'bots.title')).toBe('Gegen Bots spielen');
         expect(t('de', 'debug.title')).toBe('Debug-Konsole');
         expect(t('en', 'debug.subtitle', { name: 'debug_abc' })).toBe('Signed in as debug_abc');
     });

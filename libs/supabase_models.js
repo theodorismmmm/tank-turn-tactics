@@ -64,6 +64,8 @@ function mapRow(row) {
     doc.doFogOfWar = row.do_fog_of_war;
     doc.doBounty = row.do_bounty;
     doc.doEscort = row.do_escort;
+    doc.vsBots = row.vs_bots;
+    doc.isBot = row.is_bot;
     doc.actionLog = row.action_log || [];
     doc.actions = row.actions || [];
     doc.createdAt = row.created_at;
@@ -107,6 +109,9 @@ function gameToRow(data) {
     if (data.allowAlwaysJoin !== undefined || data.allow_always_join !== undefined) {
         row.allow_always_join = data.allowAlwaysJoin ?? data.allow_always_join;
     }
+    if (data.vsBots !== undefined || data.vs_bots !== undefined) {
+        row.vs_bots = data.vsBots ?? data.vs_bots;
+    }
     if (data.actions !== undefined) row.actions = data.actions;
     if (data.actionLog !== undefined || data.action_log !== undefined) {
         row.action_log = data.actionLog ?? data.action_log;
@@ -125,6 +130,9 @@ function playerToRow(data) {
     if (data.sight !== undefined) row.sight = data.sight;
     if (data.health !== undefined) row.health = data.health;
     if (data.color !== undefined) row.color = data.color;
+    if (data.isBot !== undefined || data.is_bot !== undefined) {
+        row.is_bot = data.isBot ?? data.is_bot;
+    }
     if (data.bounty_target !== undefined) row.bounty_target = toId(data.bounty_target);
     if (data.vote_jury !== undefined) row.vote_jury = toId(data.vote_jury);
     return row;
@@ -175,6 +183,7 @@ function mapUserRow(row) {
     doc.username = row.username || (row.email ? String(row.email).split('@')[0] : null);
     doc.guest = !!row.guest;
     doc.debug = !!row.debug;
+    doc.bot = !!row.bot;
     doc.admin = !!row.admin;
     doc.email = row.email || null;
     // passport / templates expect .id
@@ -194,6 +203,7 @@ const User = function User(data = {}) {
         salt: data.salt,
         guest: !!data.guest,
         debug: !!data.debug,
+        bot: !!data.bot,
         admin: !!data.admin
     });
     this.save = async () => {
@@ -205,6 +215,7 @@ const User = function User(data = {}) {
             salt: this.salt,
             guest: !!this.guest,
             debug: !!this.debug,
+            bot: !!this.bot,
             admin: !!this.admin,
             updated_at: new Date().toISOString()
         }).select('*').single();
@@ -229,6 +240,7 @@ User.findOne = function findOne(query = {}, callback) {
             salt: d.salt,
             guest: !!d.guest,
             debug: !!d.debug,
+            bot: !!d.bot,
             admin: !!d.admin,
             updated_at: new Date().toISOString()
         }));
@@ -263,6 +275,7 @@ const Game = function Game(data = {}) {
         doBroadcastAction: data.doBroadcastAction ?? true,
         doFogOfWar: data.doFogOfWar ?? false,
         doBounty: data.doBounty ?? true,
+        vsBots: data.vsBots ?? false,
         actions: data.actions ?? [],
         actionLog: data.actionLog ?? []
     });
@@ -356,6 +369,7 @@ const Player = function Player(data = {}) {
         sight: data.sight ?? 1,
         health: data.health ?? 3,
         color: data.color ?? '#00ffc3',
+        isBot: data.isBot ?? false,
         bounty_target: data.bounty_target ? asId(data.bounty_target) : null,
         vote_jury: data.vote_jury ? asId(data.vote_jury) : null
     });
