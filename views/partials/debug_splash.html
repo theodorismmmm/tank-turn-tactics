@@ -289,8 +289,12 @@
                         });
                     });
 
+                    // Reveal destination as soon as the morph finishes —
+                    // don't wait for splash cleanup (hide) or the console
+                    // stays blank after the window has already faded out.
                     setTimeout(function () {
-                        hide().then(resolve);
+                        resolve();
+                        hide();
                     }, 560);
                 }, holdMs);
             });
